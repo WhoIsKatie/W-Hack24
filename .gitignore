@@ -3,3 +3,8 @@
 
 client_secret.json
 access_token.json
+
+root.crt
+root.key
+root.srl
+server.csr
