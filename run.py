@@ -1,12 +1,22 @@
 from flask import Flask, request, redirect, render_template
+from flask_restful import reqparse, Api, Resource
+
 import google_auth_oauthlib.flow
 from app import util
 import secrets
 import requests
 
 app = Flask(__name__)
+api = Api(app)
+
 app.secret_key = secrets.token_hex(16)
 
+parser = reqparse.RequestParser()
+parser.add_argument('task')
+class Message(Resource):
+    def get(self):
+        return {"message": 'Hello World'}
+api.add_resource(Message, '/api/hello')
 
 flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
     'client_secret.json',
@@ -24,16 +34,6 @@ def start():
         prompt='consent')
     return redirect(authorization_url)
 
-# Route for receiving voice data
-@app.route('/voice', methods=['POST'])
-def receive_voice():
-    # Process voice data (convert to text, send to ML model)
-    # For example:
-    voice_data = request.form['voice_data']
-    # Send voice data to ML model
-    processed_text = util.process_voice(voice_data)
-    return processed_text
-
 @app.route('/oauth2callback')
 def oauth2callback():
     userId = 'me'
@@ -50,7 +50,7 @@ def oauth2callback():
     #     json.dump({'access_token': access_token, 'headers': headers}, f)
 
     all_messages_url = f'https://gmail.googleapis.com/gmail/v1/users/{userId}/messages'
-    response = requests.get(all_messages_url, headers=headers)
+    response = requests.get(all_messages_url, headers=headers, params = {'q': "is:inbox -from:me"})
     
     if response.status_code != 200:
         print(f'Error: {response.status_code} - {response.text}')
@@ -68,6 +68,15 @@ def oauth2callback():
 def index():
     return render_template('index.html', email_list=email_list)
 
+# Route for receiving voice data
+@app.route('/voice', methods=['POST'])
+def receive_voice():
+    # Process voice data (convert to text, send to ML model)
+    # For example:
+    voice_data = request.form['voice_data']
+    # Send voice data to ML model
+    processed_text = util.process_voice(voice_data)
+    return processed_text
 
 if __name__ == '__main__':
     app.run(debug=True, ssl_context=('server.crt', 'server.key'))
