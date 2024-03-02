@@ -28,7 +28,7 @@ flow.redirect_uri = 'https://127.0.0.1:5000/oauth2callback'
 sender_array, subject_array, date_array = [], [], []
 
 # load the model
-model_path = os.path.join('model', 'model.joblib')
+model_path = os.path.join('model', 'email_classifier_model.joblib')
 model = load(model_path)
 
 # example use
