@@ -5,8 +5,18 @@ import google_auth_oauthlib.flow
 from app import util
 import secrets
 import requests
-from joblib import load
+
 import os
+import re
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.pipeline import Pipeline
+from joblib import load
 
 app = Flask(__name__)
 api = Api(app)
@@ -31,13 +41,13 @@ sender_array, subject_array, date_array, body_array = [], [], [], []
 model_path = os.path.join('model', 'email_classifier_model.joblib')
 model = load(model_path)
 
-# example use
+## example use
 # incoming_text_data = "whatever"
-# predictions = pipeline.predict([test_text])
+# predictions = model.predict([incoming_text_data])
 # print(predictions[0])
-# probabilities = pipeline.predict_proba([test_text])
+# probabilities = model.predict_proba([incoming_text_data])
 # print(f"Confidence: {max(probabilities[0])*100:.2f}%")
-# the return value is an array, so you need to access the first index
+## the return value is an array, so you need to access the first index
 
 @app.route('/')
 def start():
