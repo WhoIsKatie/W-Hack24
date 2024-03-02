@@ -25,7 +25,7 @@ flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
     scopes=['https://www.googleapis.com/auth/gmail.readonly'])
 flow.redirect_uri = 'https://127.0.0.1:5000/oauth2callback'
 
-sender_array, subject_array, date_array = [], [], []
+sender_array, subject_array, date_array, body_array = [], [], [], []
 
 # load the model
 model_path = os.path.join('model', 'email_classifier_model.joblib')
@@ -84,12 +84,14 @@ def oauth2callback():
                     subject_array.append(header['value'])
                 elif header['name'] == 'Date':
                     date_array.append(header['value'])
+
+            body_array.append(message_data['snippet'])
     return redirect('/index')
 
 @app.route('/index')
 def index():
     email_list = zip(sender_array, subject_array, date_array)
-    return render_template('index.html', email_list = email_list)
+    return render_template('index.html', email_list = email_list, body_array=body_array)
 
 # Route for receiving voice data
 @app.route('/voice', methods=['POST'])
