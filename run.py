@@ -1,9 +1,8 @@
-from flask import Flask, session, request, redirect, render_template
+from flask import Flask, request, redirect, render_template
 import google_auth_oauthlib.flow
 from app import util
-import secrets, os
+import secrets
 import requests
-import json
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
@@ -52,7 +51,6 @@ def oauth2callback():
 
     all_messages_url = f'https://gmail.googleapis.com/gmail/v1/users/{userId}/messages'
     response = requests.get(all_messages_url, headers=headers)
-    print(response.json())
     
     if response.status_code != 200:
         print(f'Error: {response.status_code} - {response.text}')

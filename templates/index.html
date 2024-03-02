@@ -34,11 +34,9 @@
 <body>
     <div class="container">
         <div class="email-list">
-            <div class="email-list-item">Email 1</div>
-            <div class="email-list-item">Email 2</div>
-            <div class="email-list-item">Email 3</div>
-            <div class="email-list-item">Email 4</div>
-            <div class="email-list-item">Email 5</div>
+            {% for email in email_list %}
+                <div class="email-list-item">{{ email }}</div>
+            {% endfor %}
         </div>
         <div class="email-viewer">
             <h2>Email Viewer</h2>
