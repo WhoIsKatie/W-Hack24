@@ -5,6 +5,7 @@ import google_auth_oauthlib.flow
 from app import util
 import secrets
 import requests
+from base64 import urlsafe_b64decode
 
 import os
 import re
@@ -79,23 +80,24 @@ def oauth2callback():
         print(f'Error: {response.status_code} - {response.text}')
 
     
-    for message in response.json()['messages']:
+    for message in response.json()['messages'][0:5]:
         message_id = message['id']
         message_url = f'https://gmail.googleapis.com/gmail/v1/users/{userId}/messages/{message_id}'
         message_response = requests.get(message_url, headers=headers)
         if message_response.status_code == 200:
             message_data = message_response.json()
-            email_data = message_data['payload']['headers'] #it's an array of dictionaries which have 'name' and 'value'
-
-            for header in email_data:
+            header_data = message_data['payload']['headers'] #it's an array of dictionaries which have 'name' and 'value'
+            body_data = message_data['payload']['body']['data'] if 'data' in message_data['payload']['body'] else message_data['payload']['parts'][0]['body']['data']
+            body_data = urlsafe_b64decode(body_data).decode('utf-8')
+            body_array.append(body_data)
+            
+            for header in header_data:
                 if header['name'] == 'From':
                     sender_array.append(header['value'])
                 elif header['name'] == 'Subject':
                     subject_array.append(header['value'])
                 elif header['name'] == 'Date':
-                    date_array.append(header['value'])
-
-            body_array.append(message_data['snippet'])
+                    date_array.append(header['value'])      
     return redirect('/index')
 
 @app.route('/index')
