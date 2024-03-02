@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Email Frontend</title>
+    <style>
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .email-list {
+            flex: 0 0 20%;
+            background-color: #f1f1f1;
+            padding: 20px;
+        }
+
+        .email-list-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+
+        .email-list-item:hover {
+            background-color: #eaeaea;
+        }
+
+        .email-viewer {
+            flex: 1;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="email-list">
+            <div class="email-list-item">Email 1</div>
+            <div class="email-list-item">Email 2</div>
+            <div class="email-list-item">Email 3</div>
+            <div class="email-list-item">Email 4</div>
+            <div class="email-list-item">Email 5</div>
+        </div>
+        <div class="email-viewer">
+            <h2>Email Viewer</h2>
+            <p>Click on an email to view its content.</p>
+        </div>
+    </div>
+</body>
+</html>
