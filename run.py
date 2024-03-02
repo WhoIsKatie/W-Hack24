@@ -1,4 +1,6 @@
 from flask import Flask, request, redirect, render_template
+from flask_restful import reqparse, Api, Resource
+
 import google_auth_oauthlib.flow
 from app import util
 import secrets
@@ -7,15 +9,23 @@ from joblib import load
 import os
 
 app = Flask(__name__)
+api = Api(app)
+
 app.secret_key = secrets.token_hex(16)
 
+parser = reqparse.RequestParser()
+parser.add_argument('task')
+class Message(Resource):
+    def get(self):
+        return {"message": 'Hello World'}
+api.add_resource(Message, '/api/hello')
 
 flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
     'client_secret.json',
     scopes=['https://www.googleapis.com/auth/gmail.readonly'])
 flow.redirect_uri = 'https://127.0.0.1:5000/oauth2callback'
 
-email_list = []
+sender_array, subject_array, date_array = [], [], []
 
 # load the model
 model_path = os.path.join('model', 'model.joblib')
@@ -37,16 +47,6 @@ def start():
         prompt='consent')
     return redirect(authorization_url)
 
-# Route for receiving voice data
-@app.route('/voice', methods=['POST'])
-def receive_voice():
-    # Process voice data (convert to text, send to ML model)
-    # For example:
-    voice_data = request.form['voice_data']
-    # Send voice data to ML model
-    processed_text = util.process_voice(voice_data)
-    return processed_text
-
 @app.route('/oauth2callback')
 def oauth2callback():
     userId = 'me'
@@ -63,10 +63,11 @@ def oauth2callback():
     #     json.dump({'access_token': access_token, 'headers': headers}, f)
 
     all_messages_url = f'https://gmail.googleapis.com/gmail/v1/users/{userId}/messages'
-    response = requests.get(all_messages_url, headers=headers)
+    response = requests.get(all_messages_url, headers=headers, params = {'q': "is:inbox -from:me"})
     
     if response.status_code != 200:
         print(f'Error: {response.status_code} - {response.text}')
+
     
     for message in response.json()['messages']:
         message_id = message['id']
@@ -74,13 +75,31 @@ def oauth2callback():
         message_response = requests.get(message_url, headers=headers)
         if message_response.status_code == 200:
             message_data = message_response.json()
-            email_list.append(message_data['payload']['headers'])
+            email_data = message_data['payload']['headers'] #it's an array of dictionaries which have 'name' and 'value'
+
+            for header in email_data:
+                if header['name'] == 'From':
+                    sender_array.append(header['value'])
+                elif header['name'] == 'Subject':
+                    subject_array.append(header['value'])
+                elif header['name'] == 'Date':
+                    date_array.append(header['value'])
     return redirect('/index')
 
 @app.route('/index')
 def index():
-    return render_template('index.html', email_list=email_list)
+    email_list = zip(sender_array, subject_array, date_array)
+    return render_template('index.html', email_list = email_list)
 
+# Route for receiving voice data
+@app.route('/voice', methods=['POST'])
+def receive_voice():
+    # Process voice data (convert to text, send to ML model)
+    # For example:
+    voice_data = request.form['voice_data']
+    # Send voice data to ML model
+    processed_text = util.process_voice(voice_data)
+    return processed_text
 
 if __name__ == '__main__':
     app.run(debug=True, ssl_context=('server.crt', 'server.key'))
