@@ -5,7 +5,7 @@ make sure you have the client_secret.json
 
 initially you will need to download nltk data:
 1. open up a python interpretor
-2. > import nltk
-   > nltk.download()
+2. import nltk
+   nltk.download()
 
 to run: python run.py
