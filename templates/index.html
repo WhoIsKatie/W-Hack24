@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Email Frontend</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css" rel="stylesheet">
     <style>
         .container {
             display: flex;
@@ -32,13 +33,13 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="email-list">
+    <div class="flex container">
+        <div class="email-list w-1/3">
             {% for email in email_list %}
                 <div class="email-list-item">{{ email }}</div>
             {% endfor %}
         </div>
-        <div class="email-viewer">
+        <div class="email-viewer w-2/3">
             <h2>Email Viewer</h2>
             <p>Click on an email to view its content.</p>
         </div>
