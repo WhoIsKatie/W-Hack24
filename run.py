@@ -5,8 +5,18 @@ import google_auth_oauthlib.flow
 from app import util
 import secrets
 import requests
-from joblib import load
+
 import os
+import re
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.pipeline import Pipeline
+from joblib import load
 
 app = Flask(__name__)
 api = Api(app)
