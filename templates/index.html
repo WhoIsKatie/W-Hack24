@@ -41,8 +41,13 @@
         </div>
         <div class="email-viewer w-2/3">
             <h2>Email Viewer</h2>
-            <p>Click on an email to view its content.</p>
+            <p id="email-content">Click on an email to view its content.</p>
         </div>
     </div>
+    <script>
+        function displayEmailContent(content) {
+            document.getElementById("email-content").innerText = content;
+        }
+    </script>
 </body>
 </html>

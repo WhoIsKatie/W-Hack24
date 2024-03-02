@@ -23,7 +23,7 @@ flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
     scopes=['https://www.googleapis.com/auth/gmail.readonly'])
 flow.redirect_uri = 'https://127.0.0.1:5000/oauth2callback'
 
-email_list = []
+sender_array, subject_array, date_array = [], [], []
 
 
 @app.route('/')
@@ -54,6 +54,7 @@ def oauth2callback():
     
     if response.status_code != 200:
         print(f'Error: {response.status_code} - {response.text}')
+
     
     for message in response.json()['messages']:
         message_id = message['id']
@@ -61,12 +62,21 @@ def oauth2callback():
         message_response = requests.get(message_url, headers=headers)
         if message_response.status_code == 200:
             message_data = message_response.json()
-            email_list.append(message_data['payload']['headers'])
+            email_data = message_data['payload']['headers'] #it's an array of dictionaries which have 'name' and 'value'
+
+            for header in email_data:
+                if header['name'] == 'From':
+                    sender_array.append(header['value'])
+                elif header['name'] == 'Subject':
+                    subject_array.append(header['value'])
+                elif header['name'] == 'Date':
+                    date_array.append(header['value'])
     return redirect('/index')
 
 @app.route('/index')
 def index():
-    return render_template('index.html', email_list=email_list)
+    email_list = zip(sender_array, subject_array, date_array)
+    return render_template('index.html', email_list = email_list)
 
 # Route for receiving voice data
 @app.route('/voice', methods=['POST'])
