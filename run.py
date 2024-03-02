@@ -3,6 +3,8 @@ import google_auth_oauthlib.flow
 from app import util
 import secrets
 import requests
+from joblib import load
+import os
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
@@ -15,6 +17,17 @@ flow.redirect_uri = 'https://127.0.0.1:5000/oauth2callback'
 
 email_list = []
 
+# load the model
+model_path = os.path.join('model', 'model.joblib')
+model = load(model_path)
+
+# example use
+# incoming_text_data = "whatever"
+# predictions = pipeline.predict([test_text])
+# print(predictions[0])
+# probabilities = pipeline.predict_proba([test_text])
+# print(f"Confidence: {max(probabilities[0])*100:.2f}%")
+# the return value is an array, so you need to access the first index
 
 @app.route('/')
 def start():
