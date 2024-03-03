@@ -9,13 +9,10 @@
 .container {
     display: flex;
     height: 100vh;
-    background-color: black;
-    color: white;
 }
 
 .call-list {
     flex: 0 0 20%;
-    background-color: black;
     padding: 10px;
 }
 
@@ -51,6 +48,46 @@
 .tab.active {
     font-weight: bold;
 }
+
+#call-viewer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 100px 100px;
+    overflow: auto;
+}
+
+#content-subheader {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+#result-header {
+    font-size: 50px;
+    letter-spacing: 2px;
+    font-weight: 500;
+}
+
+#spinner {
+    display: none;
+    border: 16px solid #434343;
+    border-top: 16px solid #ffffff;
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
 </style>
 <script>
     console.log("js loaded")
@@ -74,16 +111,61 @@ document.addEventListener("DOMContentLoaded", function () {
         // Check if the clicked element is an inner div with class "call-list-item"
         if (event.target.classList.contains("call-list-item")) {
             console.log(node)
+            var selected = NaN;
+
             // Get the specific inner div that was clicked
             var clickedcall = event.target;
             var callContentLocation = document.getElementById("call-content")
+            var callViewer = document.getElementById("call-viewer")
             var callContent = bodyArrayList[clickedcall.id.split("_")[1]];
+            var resultHeader = document.getElementById("result-header");
+
             callContentLocation.innerHTML = callContent;
+            callViewer.style.backgroundColor = "#ffffff";
 
             // Perform actions based on the clicked inner div
             var callContentDisplay = document.getElementById("call-content")
             callContentDisplay.innerHTML = bodyArrayList[clickedcall.id.split("_")[1]]; 
-        }
+            
+            
+            if (selected !== clickedcall.id.split("_")[1]) {
+						showLoader();
+		               	selected = clickedcall.id.split("_")[1];
+
+						fetch('/ping', {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json'
+							},
+							body: JSON.stringify({call: callContent})
+						})
+							.then(response => response.json())
+							.then(data => {
+								let message = data["message"];
+								hideLoader();
+								if (message === "Malicious Email") {
+									callViewer.style.backgroundColor = "rgba(255,0,0, 0.2)";
+									resultHeader.innerHTML = "MALICIOUS";
+									resultHeader.style.color = "#9f0000";
+								} else if (message === "Potentially Malicious") {
+									callViewer.style.backgroundColor = "rgba(255,196,0, 0.5)";
+									resultHeader.innerHTML = "POTENTIALLY MALICIOUS";
+									resultHeader.style.color = "#c87f00";
+								} else {
+									callViewer.style.backgroundColor = "rgb(131,207,83, 0.2)";
+									resultHeader.innerHTML = "Harmless";
+									resultHeader.style.color = "#104408";
+								}
+								console.log(data);
+							})
+							.catch(error => {
+								console.error('Error: ' + error);
+							});
+		           }
+		       } else {
+					console.log(event.target)
+			   }
+        
     });
 
     callTab.addEventListener("click", function () {
@@ -94,6 +176,34 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href =  "{{ url_for('index') }}";
     });
 });
+
+
+    function showLoader(){
+        var callContent = document.getElementById("call-content");
+        var resultHeader = document.getElementById("result-header");
+        var contentSubheader = document.getElementById("content-subheader");
+        var spinner = document.getElementById("spinner");
+
+        resultHeader.style.display = "none";
+        callContent.style.display = "none";
+        contentSubheader.style.display = "none";
+
+        spinner.style.display = "inline-flex";
+        spinner.style.display = "block";  
+    }
+
+    function hideLoader() {
+			var callContent = document.getElementById("call-content");
+			var resultHeader = document.getElementById("result-header");
+			var contentSubheader = document.getElementById("content-subheader");
+		    var spinner = document.getElementById("spinner");
+
+			resultHeader.style.display = "block";
+			callContent.style.display = "block";
+			contentSubheader.style.display = "block";
+
+			spinner.style.display = "none";
+		}
 </script>
 <body>
     <div class="navbar">
@@ -108,8 +218,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
             {% endfor %}
         </div>
-        <div class="call-viewer w-2/3">
-            <p id="call-content">Click on an call to view its content.</p>
+        <div class="call-viewer w-2/3" id="call-viewer">
+            <h2 id="result-header">Call Log Viewer</h2>
+            <div id="spinner"></div>
+			<h3 id="content-subheader">Log:</h3>
+            <p id="call-content">Click on an call to view its logs.</p>
         </div>
     </div>
 </body>

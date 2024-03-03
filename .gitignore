@@ -8,3 +8,4 @@ root.crt
 root.key
 root.srl
 server.csr
+.env
