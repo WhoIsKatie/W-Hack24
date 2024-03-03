@@ -113,12 +113,12 @@ def ping():
     richard_probabilities = model.predict_proba([incoming_text_data])
     print(f"Confidence: {max(richard_probabilities[0])*100:.2f}%")
     if((feng_predictions == "Safe" and richard_predictions[0] != "Malicious Email") or (feng_predictions == "Potentially Malicious" and richard_predictions[0] == "Malicious Email")):
-        return jsonify({"message": richard_predictions[0]})
+        return jsonify({"message": feng_predictions.content, "confidence": f"{max(richard_probabilities[0])*100:.2f}%", "opposite": richard_predictions[0], "opposite_confidence": f"{max(richard_probabilities[0])*100:.2f}%"})
 
     if((feng_predictions == "Potentially Malicious" and richard_predictions[0] != "Malicious Email") or (feng_predictions == "Safe" and richard_predictions[0] == "Malicious Email")):
-        return jsonify({"message": "Potentially Malicious"})
+        return jsonify({"message": "Potentially Malicious", "opposite": "Had conflicting views - take caution!", "opposite_confidence": "N/A"})
     
-    return jsonify({"message": richard_predictions[0]})
+    return jsonify({"message": richard_predictions[0], "opposite": feng_predictions.content, "opposite_confidence": "N/A"})
 
 def get_emails():
     # If the arrays are already populated, don't do anything

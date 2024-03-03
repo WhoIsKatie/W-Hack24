@@ -1,6 +1,7 @@
 from flask import request
 from openai import OpenAI
 import os
+import speech_recognition as sr
 
 def feng_analysis(email_message):
     client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
@@ -23,10 +24,21 @@ def feng_analysis(email_message):
     return(completion.choices[0].message)
 
 
-def process_voice(voice_data):
-    pass
-    # placeholder
-    # assume this returns text data from voice files
+def process_voice(voice_file):
+    # Convert voice data to text
+    recognizer = sr.Recognizer()
+    with sr.AudioFile(voice_file) as source:
+        audio_data = recognizer.record(source)
+        try:
+            text = recognizer.recognize_google(voice_file)
+            print(f"Transcribed text: {text}")
+            return text
+        except sr.UnknownValueError:
+            print("Google Speech Recognition could not understand audio.")
+            return None
+        except sr.RequestError as e:
+            print(f"Could not request results from Google Speech Recognition service; {e}")
+            return None
 
 def get_calls():
     call_logs = []
