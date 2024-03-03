@@ -7,6 +7,7 @@ from app import util
 import secrets
 import requests
 from base64 import urlsafe_b64decode
+import json
 
 import os
 import re
@@ -24,6 +25,7 @@ app = Flask(__name__)
 
 app.secret_key = secrets.token_hex(16)
 
+TOKEN_FILE = 'access_token.json'
 flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
     'client_secret.json',
     scopes=['https://www.googleapis.com/auth/gmail.readonly'])
@@ -45,56 +47,43 @@ model = load(model_path)
 
 @app.route('/')
 def start():
+    if os.path.exists(TOKEN_FILE):
+        # Token exists, redirect to index directly
+        return redirect('/index')
+    else:
     # Redirect to Google authorization URL
-    authorization_url, state = flow.authorization_url(
+        authorization_url, state = flow.authorization_url(
         access_type='offline',
         prompt='consent')
-    return redirect(authorization_url)
+        return redirect(authorization_url)
 
 @app.route('/oauth2callback')
 def oauth2callback():
     userId = 'me'
-    # Get the authorization code from the callback URL
-    authorization_response = request.url
-    # Exchange the authorization code for an access token
-    flow.fetch_token(authorization_response=authorization_response)
-    # Access token is now available in flow.credentials
-    access_token = flow.credentials.token
-    headers = {'Authorization': f'Bearer {access_token}'}
-    
-    # TODO: not sure if we want to keep the stuff
-    # with open('access_token.json', 'w') as f:
-    #     json.dump({'access_token': access_token, 'headers': headers}, f)
 
-    all_messages_url = f'https://gmail.googleapis.com/gmail/v1/users/{userId}/messages'
-    response = requests.get(all_messages_url, headers=headers, params = {'q': "is:inbox -from:me"})
-    
-    if response.status_code != 200:
-        print(f'Error: {response.status_code} - {response.text}')
+    if os.path.exists(TOKEN_FILE):
+        with open(TOKEN_FILE, 'r') as f:
+            token_data = json.load(f)
+            access_token = token_data.get('access_token')
+    else:
+        # Get the authorization code from the callback URL
+        authorization_response = request.url
+        # Exchange the authorization code for an access token
+        flow.fetch_token(authorization_response=authorization_response)
+        # Access token is now available in flow.credentials
+        access_token = flow.credentials.token
 
+        # Save the token to a file
+        with open(TOKEN_FILE, 'w') as f:
+            json.dump({'access_token': access_token}, f)
     
-    for message in response.json()['messages'][0:5]:
-        message_id = message['id']
-        message_url = f'https://gmail.googleapis.com/gmail/v1/users/{userId}/messages/{message_id}'
-        message_response = requests.get(message_url, headers=headers)
-        if message_response.status_code == 200:
-            message_data = message_response.json()
-            header_data = message_data['payload']['headers'] #it's an array of dictionaries which have 'name' and 'value'
-            body_data = message_data['payload']['body']['data'] if 'data' in message_data['payload']['body'] else message_data['payload']['parts'][0]['body']['data']
-            body_data = urlsafe_b64decode(body_data).decode('utf-8')
-            body_array.append(body_data)
+    get_emails()
 
-            for header in header_data:
-                if header['name'] == 'From':
-                    sender_array.append(header['value'])
-                elif header['name'] == 'Subject':
-                    subject_array.append(header['value'])
-                elif header['name'] == 'Date':
-                    date_array.append(header['value'])
     return redirect('/index')
 
 @app.route('/index')
 def index():
+    get_emails()
     email_list = zip(sender_array, subject_array, date_array)
     return render_template('index.html', email_list=email_list, body_array=body_array)
 
@@ -122,6 +111,43 @@ def ping():
     probabilities = model.predict_proba([incoming_text_data])
     print(f"Confidence: {max(probabilities[0])*100:.2f}%")
     return jsonify({"message": predictions[0]})
+
+def get_emails():
+    # If the arrays are already populated, don't do anything
+    if sender_array and subject_array and date_array and body_array:
+        return
+
+    userId = 'me'
+    with open(TOKEN_FILE, 'r') as f:
+        token_data = json.load(f)
+        access_token = token_data.get('access_token')
+
+    headers = {'Authorization': f'Bearer {access_token}'}
+    all_messages_url = f'https://gmail.googleapis.com/gmail/v1/users/{userId}/messages'
+    response = requests.get(all_messages_url, headers=headers, params={'q': "is:inbox -from:me"})
+
+    if response.status_code != 200:
+        print(f'Error: {response.status_code} - {response.text}')
+
+
+    for message in response.json()['messages'][0:5]:
+        message_id = message['id']
+        message_url = f'https://gmail.googleapis.com/gmail/v1/users/{userId}/messages/{message_id}'
+        message_response = requests.get(message_url, headers=headers)
+        if message_response.status_code == 200:
+            message_data = message_response.json()
+            header_data = message_data['payload']['headers'] #it's an array of dictionaries which have 'name' and 'value'
+            body_data = message_data['payload']['body']['data'] if 'data' in message_data['payload']['body'] else message_data['payload']['parts'][0]['body']['data']
+            body_data = urlsafe_b64decode(body_data).decode('utf-8')
+            body_array.append(body_data)
+
+            for header in header_data:
+                if header['name'] == 'From':
+                    sender_array.append(header['value'])
+                elif header['name'] == 'Subject':
+                    subject_array.append(header['value'])
+                elif header['name'] == 'Date':
+                    date_array.append(header['value'])
 
 if __name__ == '__main__':
     app.run(debug=True, ssl_context=('server.crt', 'server.key'))
