@@ -1,17 +1,27 @@
 from flask import request
-
-from run import app
+from openai import OpenAI
 import os
 
-def ml_analysis(text_data):
-    pass
-    # Placeholder code for processing voice data to text
-    # text = convert_to_text(voice_data)
-    # Send text to ML model for processing
-    # processed_text = ml_model.process(text)
-    # return processed_text
-    
-    # just assuming this returns array, [0] for the classification, [1] for the confidence
+def feng_analysis(email_message):
+    client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+
+    completion = client.chat.completions.create(
+    model="ft:gpt-3.5-turbo-0125:personal:uottawahack3:8yWNYh5I",
+    messages=[
+        {"role": "system", "content": """
+        Given the input email and the reponse determine if the email provided below is safe or potentially malicious based on its
+    content. If the email seems legitimate and does not contain any
+    harmful intent, threats, or suspicious requests, classify it as
+    "safe". If the email contains elements typical of phishing attempts,
+    such as requests for sensitive information, suspicious links, or unusual
+    sender addresses, classify it as "potentially malicious".
+        """},
+        {"role": "user", "content": 
+        email_message} # Write your prompt in here
+    ]
+    )
+    return(completion.choices[0].message)
+
 
 def process_voice(voice_data):
     pass

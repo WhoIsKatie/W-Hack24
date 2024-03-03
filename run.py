@@ -106,11 +106,19 @@ def receive_voice():
 def ping():
     body = request.data
     incoming_text_data = body.decode('utf-8')
-    predictions = model.predict([incoming_text_data])
-    print(predictions[0])
-    probabilities = model.predict_proba([incoming_text_data])
-    print(f"Confidence: {max(probabilities[0])*100:.2f}%")
-    return jsonify({"message": predictions[0]})
+    richard_predictions = model.predict([incoming_text_data])
+    feng_predictions = util.feng_analysis(incoming_text_data)
+    # classification
+    print(richard_predictions[0], feng_predictions)
+    richard_probabilities = model.predict_proba([incoming_text_data])
+    print(f"Confidence: {max(richard_probabilities[0])*100:.2f}%")
+    if((feng_predictions == "Safe" and richard_predictions[0] != "Malicious Email") or (feng_predictions == "Potentially Malicious" and richard_predictions[0] == "Malicious Email")):
+        return jsonify({"message": richard_predictions[0]})
+
+    if((feng_predictions == "Potentially Malicious" and richard_predictions[0] != "Malicious Email") or (feng_predictions == "Safe" and richard_predictions[0] == "Malicious Email")):
+        return jsonify({"message": "Potentially Malicious"})
+    
+    return jsonify({"message": richard_predictions[0]})
 
 def get_emails():
     # If the arrays are already populated, don't do anything
