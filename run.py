@@ -100,7 +100,8 @@ def index():
 
 @app.route('/calls', methods=['GET'])
 def calls():
-    return render_template('call_tab.html')
+    logs = util.get_calls()
+    return render_template('call_tab.html', call_list=logs, body_array=logs)
 
 # Route for receiving voice data
 @app.route('/voice', methods=['POST'])

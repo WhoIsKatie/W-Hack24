@@ -57,6 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Get the outer div element
     var callList = document.getElementById("call_list");
     var callTab = document.getElementById("call_tab");
+    var emailTab = document.getElementById("email_tab");
 
 //     // Add a click event listener to the outer div
     callList.addEventListener("click", function (event) {
@@ -75,17 +76,17 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     callTab.addEventListener("click", function () {
-        window.location.href =   "{{ url_for('index') }}";
+        window.location.href =   "{{ url_for('calls') }}";
     });
 
-    callTab.addEventListener("click", function () {
-        window.location.href =  "{{ url_for('calls') }}";
+    emailTab.addEventListener("click", function () {
+        window.location.href =  "{{ url_for('index') }}";
     });
 });
 </script>
 <body>
     <div class="navbar">
-        <div id="call_tab" class="tab">Emails</div>
+        <div id="email_tab" class="tab">Emails</div>
         <div id="call_tab" class="tab active">Calls</div>
     </div>
     <div class="flex container">

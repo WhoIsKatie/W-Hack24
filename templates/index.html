@@ -62,68 +62,77 @@
     document.addEventListener("DOMContentLoaded", function () {
         // Get the outer div element
         var emailList = document.getElementById("email_list");
-        var bodyArrayList = {{ body_array| tojson
-    }};
-    var spinner = document.getElementById("spinner");
-    var emailTab = document.getElementById("email_tab");
-    var callTab = document.getElementById("call_tab");
+        var bodyArrayList = {{ body_array| tojson }};
+        var spinner = document.getElementById("spinner");
+        var emailTab = document.getElementById("email_tab");
+        var callTab = document.getElementById("call_tab");
 
-    spinner.style.display = "none";
+        spinner.style.display = "none";
 
-    emailList.addEventListener("click", function (event) {
-        if (event.target.classList.contains("email-list-item")) {
-            var clickedEmail = event.target;
-            var emailContentLocation = document.getElementById("email-content")
+        emailList.addEventListener("click", function (event) {
+            var node = event.target;
+            while (node !== null) {
+                if (node.tagName === "DIV" && node.classList.contains("email-list-item")) {
+                    break;
+                }
+                node = node.parentNode;
+            }
 
-            var emailContent = bodyArrayList[clickedEmail.id.split("_")[1]].replace(/'/g, "\\'");
+            if (node.classList.contains("email-list-item")) {
+                console.log(node)
+                var clickedEmail = node;
+                var emailContentLocation = document.getElementById("email-content")
 
-            emailContentLocation.innerHTML = emailContent;
+                var emailContent = bodyArrayList[clickedEmail.id.split("_")[1]].replace(/'/g, "\\'");
 
-            spinner.style.display = "inline-flex";
+                emailContentLocation.innerHTML = emailContent;
 
-            if (selected !== clickedEmail.id.split("_")[1]) {
-                {
+                spinner.style.display = "inline-flex";
+
+                if (selected !== clickedEmail.id.split("_")[1]) {
                     spinner.getElementsByTagName("svg")[0].style.display = "block";
                     spinner.getElementsByTagName("p")[0].innerText = "Processing...";
                     spinner.style.backgroundColor = "#6065e8";
-                }
-                selected = clickedEmail.id.split("_")[1];
-                fetch('/ping', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email: emailContent })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        let message = data["message"];
-                        spinner.getElementsByTagName("svg")[0].style.display = "none";
-
-
-                        if (message === "Spam") {
-                            spinner.getElementsByTagName("p")[0].innerText = "Spam";
-                            spinner.style.backgroundColor = "red";
-                        } else {
-                            spinner.style.backgroundColor = "green";
-                        }
-                        spinner.getElementsByTagName("p")[0].innerText = data["message"];
-
-                        console.log(data);
+                    selected = clickedEmail.id.split("_")[1];
+                    
+                    fetch('/ping', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({email: emailContent})
                     })
-                    .catch(error => {
-                        console.error('Error: ' + error);
-                    });
+                        .then(response => response.json())
+                        .then(data => {
+                            let message = data["message"];
+                            spinner.getElementsByTagName("svg")[0].style.display = "none";
+
+
+                            if (message === "Spam") {
+                                spinner.getElementsByTagName("p")[0].innerText = "Spam";
+                                spinner.style.backgroundColor = "red";
+                            } else {
+                                spinner.style.backgroundColor = "green";
+                            }
+                            spinner.getElementsByTagName("p")[0].innerText = data["message"];
+
+                            console.log(data);
+                        })
+                        .catch(error => {
+                            console.error('Error: ' + error);
+                        });
+                }
+            } else {
+                console.log(event.target)
             }
         });
+        emailTab.addEventListener("click", function () {
+            window.location.href = "{{url_for('index')}}";
+        });
 
-    emailTab.addEventListener("click", function () {
-        window.location.href = "{{url_for('index')}}";
-    });
-
-    callTab.addEventListener("click", function () {
-        window.location.href = "{{url_for('calls')}}";
-    });
+        callTab.addEventListener("click", function () {
+            window.location.href = "{{url_for('calls')}}";
+        });
     });
 </script>
 
@@ -160,4 +169,5 @@
         </div>
     </div>
 </body>
+
 </html>
