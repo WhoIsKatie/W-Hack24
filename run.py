@@ -1,5 +1,4 @@
 from flask import Flask, request, redirect, render_template
-from flask_restful import reqparse, Api, Resource
 
 import google_auth_oauthlib.flow
 from app import util
@@ -20,16 +19,8 @@ from sklearn.pipeline import Pipeline
 from joblib import load
 
 app = Flask(__name__)
-api = Api(app)
 
 app.secret_key = secrets.token_hex(16)
-
-parser = reqparse.RequestParser()
-parser.add_argument('task')
-class Message(Resource):
-    def get(self):
-        return {"message": 'Hello World'}
-api.add_resource(Message, '/api/hello')
 
 flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
     'client_secret.json',
