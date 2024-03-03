@@ -116,12 +116,12 @@ def receive_voice():
 @app.route('/ping', methods=['POST'])
 def ping():
     body = request.data
-    print('got ping')
-    time.sleep(1)
-    if secrets.randbelow(10) > 5:
-        return jsonify({"message": "good"})
-    else:
-        return jsonify({"message": "Spam"})
+    incoming_text_data = body.decode('utf-8')
+    predictions = model.predict([incoming_text_data])
+    print(predictions[0])
+    probabilities = model.predict_proba([incoming_text_data])
+    print(f"Confidence: {max(probabilities[0])*100:.2f}%")
+    return jsonify({"message": predictions[0]})
 
 if __name__ == '__main__':
     app.run(debug=True, ssl_context=('server.crt', 'server.key'))

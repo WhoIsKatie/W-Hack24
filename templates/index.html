@@ -108,10 +108,11 @@
                             spinner.getElementsByTagName("svg")[0].style.display = "none";
 
 
-                            if (message === "Spam") {
-                                spinner.getElementsByTagName("p")[0].innerText = "Spam";
+                            if (message === "Malicious Email") {
+                                spinner.getElementsByTagName("p")[0].innerText = "Malicious Email";
                                 spinner.style.backgroundColor = "red";
                             } else {
+                                spinner.getElementsByTagName("p")[0].innerText = "Safe Email";
                                 spinner.style.backgroundColor = "green";
                             }
                             spinner.getElementsByTagName("p")[0].innerText = data["message"];
