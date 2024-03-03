@@ -75,6 +75,25 @@
 			display: flex;
 		}
 
+		#result-image {
+			display: none;
+			padding: 20px 10px;
+			height: auto;
+			max-width: 60px;
+		}
+
+		#harmless-image {
+			display: none;
+		}
+
+		#potential-image {
+			display: none;
+		}
+
+		#malicious-image {
+			display: none;
+		}
+
 		#spinner {
 			display: none;
 			border: 16px solid #434343;
@@ -123,6 +142,10 @@
 					var emailViewer = document.getElementById("email-viewer");
 		            var emailContent = bodyArrayList[clickedEmail.id.split("_")[1]].replace(/'/g, "\\'");
 					var resultHeader = document.getElementById("result-header");
+					var resultHeaderText = document.getElementById("result-header-text");
+					var potentialImg = document.getElementById("potential-image");
+					var harmlessImg = document.getElementById("harmless-image");
+					var maliciousImg = document.getElementById("malicious-image");
 
 		            emailContentLocation.innerHTML = emailContent;
 					emailViewer.style.backgroundColor = "#ffffff";
@@ -144,16 +167,23 @@
 								hideLoader();
 								if (message === "Malicious Email") {
 									emailViewer.style.backgroundColor = "rgba(255,0,0, 0.2)";
-									resultHeader.innerHTML = "MALICIOUS";
-									resultHeader.style.color = "#9f0000";
+									resultHeaderText.innerHTML = "MALICIOUS";
+									resultHeaderText.style.color = "#9f0000";
+									maliciousImg.style.display = "block";
+								} else if (message === "Potentially Malicious") {
+									emailViewer.style.backgroundColor = "rgba(255,196,0, 0.5)";
+									resultHeaderText.innerHTML = "POTENTIALLY MALICIOUS";
+									resultHeaderText.style.color = "#c87f00";
+									potentialImg.style.display = "block";
 								} else if (message === "Potentially Malicious") {
 									emailViewer.style.backgroundColor = "rgba(255,196,0, 0.5)";
 									resultHeader.innerHTML = "POTENTIALLY MALICIOUS";
 									resultHeader.style.color = "#c87f00";
 								} else {
 									emailViewer.style.backgroundColor = "rgb(131,207,83, 0.2)";
-									resultHeader.innerHTML = "Harmless";
-									resultHeader.style.color = "#104408";
+									resultHeaderText.innerHTML = "Harmless";
+									resultHeaderText.style.color = "#104408";
+									harmlessImg.style.display = "block";
 								}
 								console.log(data);
 							})
@@ -179,9 +209,18 @@
 			var resultHeader = document.getElementById("result-header");
 			var contentSubheader = document.getElementById("content-subheader");
 		    var spinner = document.getElementById("spinner");
+			var resultImg = document.getElementById("result-image");
+			var potentialImg = document.getElementById("potential-image");
+			var harmlessImg = document.getElementById("harmless-image");
+			var maliciousImg = document.getElementById("malicious-image");
 
-			resultHeader.style.display = "none";
+			resultHeader.style.display = "flex";
 			emailContent.style.display = "none";
+			contentSubheader.style.display = "none";
+			resultImg.style.display = "block";
+			harmlessImg.style.display = "none";
+			potentialImg.style.display = "none";
+			maliciousImg.style.display = "none";
 			contentSubheader.style.display = "none";
 
 			spinner.style.display = "inline-flex";
@@ -193,9 +232,12 @@
 			var resultHeader = document.getElementById("result-header");
 			var contentSubheader = document.getElementById("content-subheader");
 		    var spinner = document.getElementById("spinner");
+			var resultImg = document.getElementById("result-image");
 
-			resultHeader.style.display = "block";
+			resultHeader.style.display = "flex";
 			emailContent.style.display = "block";
+			contentSubheader.style.display = "block";
+			resultImg.style.display = "block";
 			contentSubheader.style.display = "block";
 
 			spinner.style.display = "none";
@@ -219,7 +261,26 @@
 			</div>
 			<div id="email-viewer" class="w-2/3">
 				<div id="result-header">
-					<h2 id="result-header-text">Email Viewer</h2>
+					<div id="result-image">
+						<img
+							id="harmless-image"
+							src="../static/alert_harmless.png"
+							alt="harmless alert"
+						/>
+						<img
+							id="potential-image"
+							src="../static/alert_potential.png"
+							alt="potentially malicious alert"
+						/>
+						<img
+							id="malicious-image"
+							src="../static/alert_malicious.png"
+							alt="malicious alert"
+						/>
+					</div>
+					<div id="result-header">
+						<h2 id="result-header-text">Email Viewer</h2>
+					</div>
 				</div>
 				<div id="spinner"></div>
 				<h3 id="content-subheader">Email Message:</h3>
