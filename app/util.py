@@ -45,7 +45,9 @@ def get_calls():
 
     # Assuming call_logs is a folder containing text files
     for filename in os.listdir(call_logs_folder):
-        with open(os.path.join(call_logs_folder, filename), 'r') as file:
+        with open(os.path.join(call_logs_folder, filename), mode='r') as file:
+            if not(file.name.endswith('.txt')):
+                continue
             content = file.read()
             call_logs.append(content)
 
