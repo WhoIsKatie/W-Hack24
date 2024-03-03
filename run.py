@@ -130,7 +130,7 @@ def get_emails():
         print(f'Error: {response.status_code} - {response.text}')
 
 
-    for message in response.json()['messages'][0:5]:
+    for message in response.json()['messages'][0:6]:
         message_id = message['id']
         message_url = f'https://gmail.googleapis.com/gmail/v1/users/{userId}/messages/{message_id}'
         message_response = requests.get(message_url, headers=headers)
