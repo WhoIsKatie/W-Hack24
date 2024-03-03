@@ -61,7 +61,7 @@
 			overflow: auto;
 		}
 
-		#contentSubheader {
+		#content-subheader {
 			font-size: 20px;
 			font-weight: 500;
 		}
@@ -143,9 +143,13 @@
 									emailViewer.style.backgroundColor = "rgba(255,0,0, 0.2)";
 									resultHeader.innerHTML = "MALICIOUS";
 									resultHeader.style.color = "#9f0000";
+								} else if (message === "Potentially Malicious") {
+									emailViewer.style.backgroundColor = "rgba(255,196,0, 0.5)";
+									resultHeader.innerHTML = "POTENTIALLY MALICIOUS";
+									resultHeader.style.color = "#c87f00";
 								} else {
 									emailViewer.style.backgroundColor = "rgb(131,207,83, 0.2)";
-									resultHeader.innerHTML = "HARMLESS";
+									resultHeader.innerHTML = "Harmless";
 									resultHeader.style.color = "#104408";
 								}
 								console.log(data);
@@ -168,25 +172,28 @@
 		});
 
 		function showLoader() {
-			var emailViewer = document.getElementById("email-viewer");
+			var emailContent = document.getElementById("email-content");
 			var resultHeader = document.getElementById("result-header");
-			var emailContent = document.getElementById("email-content")
+			var contentSubheader = document.getElementById("content-subheader");
 		    var spinner = document.getElementById("spinner");
 
 			resultHeader.style.display = "none";
 			emailContent.style.display = "none";
+			contentSubheader.style.display = "none";
 
 			spinner.style.display = "inline-flex";
 			spinner.style.display = "block";
 		}
 
 		function hideLoader() {
+			var emailContent = document.getElementById("email-content");
 			var resultHeader = document.getElementById("result-header");
-			var emailContent = document.getElementById("email-content")
+			var contentSubheader = document.getElementById("content-subheader");
 		    var spinner = document.getElementById("spinner");
 
 			resultHeader.style.display = "block";
 			emailContent.style.display = "block";
+			contentSubheader.style.display = "block";
 
 			spinner.style.display = "none";
 		}
@@ -210,7 +217,7 @@
 			<div id="email-viewer" class="w-2/3">
 				<h2 id="result-header">Email Viewer</h2>
 				<div id="spinner"></div>
-				<h3 id="contentSubheader">Email Message:</h3>
+				<h3 id="content-subheader">Email Message:</h3>
 				<p id="email-content">Click on an email to view its content.</p>
 			</div>
 		</div>
