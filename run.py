@@ -98,6 +98,10 @@ def index():
     email_list = zip(sender_array, subject_array, date_array)
     return render_template('index.html', email_list=email_list, body_array=body_array)
 
+@app.route('/calls', methods=['GET'])
+def calls():
+    return render_template('call_tab.html')
+
 # Route for receiving voice data
 @app.route('/voice', methods=['POST'])
 def receive_voice():
