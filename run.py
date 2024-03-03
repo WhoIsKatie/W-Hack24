@@ -1,4 +1,6 @@
-from flask import Flask, request, redirect, render_template
+import time
+
+from flask import Flask, request, redirect, render_template, jsonify
 
 import google_auth_oauthlib.flow
 from app import util
@@ -81,20 +83,20 @@ def oauth2callback():
             body_data = message_data['payload']['body']['data'] if 'data' in message_data['payload']['body'] else message_data['payload']['parts'][0]['body']['data']
             body_data = urlsafe_b64decode(body_data).decode('utf-8')
             body_array.append(body_data)
-            
+
             for header in header_data:
                 if header['name'] == 'From':
                     sender_array.append(header['value'])
                 elif header['name'] == 'Subject':
                     subject_array.append(header['value'])
                 elif header['name'] == 'Date':
-                    date_array.append(header['value'])      
+                    date_array.append(header['value'])
     return redirect('/index')
 
 @app.route('/index')
 def index():
     email_list = zip(sender_array, subject_array, date_array)
-    return render_template('index.html', email_list = email_list, body_array=body_array)
+    return render_template('index.html', email_list=email_list, body_array=body_array)
 
 # Route for receiving voice data
 @app.route('/voice', methods=['POST'])
@@ -105,6 +107,16 @@ def receive_voice():
     # Send voice data to ML model
     processed_text = util.process_voice(voice_data)
     return processed_text
+
+@app.route('/ping', methods=['POST'])
+def ping():
+    body = request.data
+    print('got ping')
+    time.sleep(1)
+    if secrets.randbelow(10) > 5:
+        return jsonify({"message": "good"})
+    else:
+        return jsonify({"message": "Spam"})
 
 if __name__ == '__main__':
     app.run(debug=True, ssl_context=('server.crt', 'server.key'))
