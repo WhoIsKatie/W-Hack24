@@ -143,6 +143,9 @@ document.addEventListener("DOMContentLoaded", function () {
 							.then(data => {
 								let message = data["message"];
 								hideLoader();
+
+                                model_info.innerHTML = "The opposing model suggests: " + data["opposite"] + " and the confidence was: " + data["opposite_confidence"];
+
 								if (message === "Malicious Email") {
 									callViewer.style.backgroundColor = "rgba(255,0,0, 0.2)";
 									resultHeader.innerHTML = "MALICIOUS";
