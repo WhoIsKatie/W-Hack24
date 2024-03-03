@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 	<head>
@@ -56,8 +57,7 @@
 			display: flex;
 			flex-direction: column;
 			align-items: flex-start;
-			justify-content: center;
-			padding: 100px 100px;
+			padding: 65px 232px;
 			overflow: auto;
 		}
 
@@ -66,10 +66,14 @@
 			font-weight: 500;
 		}
 
-		#result-header {
+		#result-header-text {
 			font-size: 50px;
 			letter-spacing: 2px;
 			font-weight: 500;
+		}
+
+		#result-header {
+			display: flex;
 		}
 
 		#spinner {
@@ -215,7 +219,13 @@
 				{% endfor %}
 			</div>
 			<div id="email-viewer" class="w-2/3">
-				<h2 id="result-header">Email Viewer</h2>
+				<div id="result-header">
+					<img
+						src="{% static 'w-hack24/alert_harmless.png' %}"
+						alt="harmless alert"
+					/>
+					<h2 id="result-header-text">Email Viewer</h2>
+				</div>
 				<div id="spinner"></div>
 				<h3 id="content-subheader">Email Message:</h3>
 				<p id="email-content">Click on an email to view its content.</p>
