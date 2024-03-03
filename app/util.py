@@ -23,14 +23,13 @@ def feng_analysis(email_message):
     )
     return(completion.choices[0].message)
 
-
 def process_voice(voice_file):
     # Convert voice data to text
     recognizer = sr.Recognizer()
     with sr.AudioFile(voice_file) as source:
         audio_data = recognizer.record(source)
         try:
-            text = recognizer.recognize_google(voice_file)
+            text = recognizer.recognize_google(audio_data)
             print(f"Transcribed text: {text}")
             return text
         except sr.UnknownValueError:

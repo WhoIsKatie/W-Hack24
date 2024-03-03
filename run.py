@@ -102,11 +102,32 @@ def receive_voice():
     processed_text = util.process_voice(voice_data)
     return processed_text
 
+# helper to preprocess text
+def preprocess_text(text):
+    # Cleaning: remove special characters and extra spaces
+    # text = re.sub(r'[\t\n\r]+', '', text)
+    text = re.sub(r'[^a-zA-Z0-9\s.,;\'\":-]', '', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+
+    # Tokenization
+    tokens = nltk.word_tokenize(text)
+
+    # Stop Words Removal
+    stop_words = set(stopwords.words('english'))
+    tokens = [token for token in tokens if token.lower() not in stop_words]
+
+    # Lemmatization
+    lemmatizer = WordNetLemmatizer()
+    tokens = [lemmatizer.lemmatize(token.lower()) for token in tokens]
+
+    # Rejoin tokens into a single string
+    return ' '.join(tokens)
+
 @app.route('/ping', methods=['POST'])
 def ping():
     body = request.data
     incoming_text_data = body.decode('utf-8')
-    richard_predictions = model.predict([incoming_text_data])
+    richard_predictions = model.predict([preprocess_text(incoming_text_data)])
     feng_predictions = util.feng_analysis(incoming_text_data)
     # classification
     print(richard_predictions[0], feng_predictions)
