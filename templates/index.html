@@ -60,6 +60,11 @@
 			overflow: auto;
 		}
 
+		#email-content {
+			word-break: break-word;
+			white-space: normal;
+		}
+
 		#content-subheader {
 			font-size: 20px;
 			font-weight: 500;
@@ -172,13 +177,9 @@
 									maliciousImg.style.display = "block";
 								} else if (message === "Potentially Malicious") {
 									emailViewer.style.backgroundColor = "rgba(255,196,0, 0.5)";
-									resultHeaderText.innerHTML = "POTENTIALLY MALICIOUS";
-									resultHeaderText.style.color = "#c87f00";
-									potentialImg.style.display = "block";
-								} else if (message === "Potentially Malicious") {
-									emailViewer.style.backgroundColor = "rgba(255,196,0, 0.5)";
 									resultHeader.innerHTML = "POTENTIALLY MALICIOUS";
 									resultHeader.style.color = "#c87f00";
+									potentialImg.style.display = "block";
 								} else {
 									emailViewer.style.backgroundColor = "rgb(131,207,83, 0.2)";
 									resultHeaderText.innerHTML = "Harmless";
@@ -214,7 +215,7 @@
 			var harmlessImg = document.getElementById("harmless-image");
 			var maliciousImg = document.getElementById("malicious-image");
 
-			resultHeader.style.display = "flex";
+			resultHeader.style.display = "none";
 			emailContent.style.display = "none";
 			contentSubheader.style.display = "none";
 			resultImg.style.display = "block";

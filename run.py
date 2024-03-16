@@ -159,24 +159,40 @@ def get_emails():
         print(f'Error: {response.status_code} - {response.text}')
 
 
-    for message in response.json()['messages'][0:10]:
-        message_id = message['id']
-        message_url = f'https://gmail.googleapis.com/gmail/v1/users/{userId}/messages/{message_id}'
-        message_response = requests.get(message_url, headers=headers)
-        if message_response.status_code == 200:
-            message_data = message_response.json()
-            header_data = message_data['payload']['headers'] #it's an array of dictionaries which have 'name' and 'value'
-            body_data = message_data['payload']['body']['data'] if 'data' in message_data['payload']['body'] else message_data['payload']['parts'][0]['body']['data']
-            body_data = urlsafe_b64decode(body_data).decode('utf-8')
-            body_array.append(body_data)
+    response_data = response.json()
+    if 'messages' in response_data:
+        for message in response_data['messages'][0:10]:
+            message_id = message['id']
+            message_url = f'https://gmail.googleapis.com/gmail/v1/users/{userId}/messages/{message_id}'
+            message_response = requests.get(message_url, headers=headers)
+            if message_response.status_code == 200:
+                message_data = message_response.json()
+                header_data = message_data['payload']['headers'] #it's an array of dictionaries which have 'name' and 'value'
+                body_data = extract_email_body_data(message_data)
+                if body_data is not None:
+                    body_data = urlsafe_b64decode(body_data).decode('utf-8')
+                else:
+                    print("body_data is None")
+                body_array.append(body_data)
 
-            for header in header_data:
-                if header['name'] == 'From':
-                    sender_array.append(header['value'])
-                elif header['name'] == 'Subject':
-                    subject_array.append(header['value'])
-                elif header['name'] == 'Date':
-                    date_array.append(header['value'])
+                for header in header_data:
+                    if header['name'] == 'From':
+                        sender_array.append(header['value'])
+                    elif header['name'] == 'Subject':
+                        subject_array.append(header['value'])
+                    elif header['name'] == 'Date':
+                        date_array.append(header['value'])
+    else:
+        print(f'Error: {response_data.get("error", {}).get("message")}')
 
+def extract_email_body_data(message_data):
+    if 'data' in message_data.get('payload', {}).get('body', {}):
+        return message_data['payload']['body']['data']
+    elif message_data.get('payload'):
+        parts = message_data['payload'].get('parts')
+        if parts and 'data' in parts[0].get('body', {}):
+            return parts[0]['body']['data']
+    return None
+    
 if __name__ == '__main__':
     app.run(debug=True, ssl_context=('server.crt', 'server.key'))
